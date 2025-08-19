@@ -1,0 +1,31 @@
+/* Additional app-specific styles */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Widget-specific styles */
+.agendify-widget {
+  font-family: 'Inter', system-ui, sans-serif;
+  box-sizing: border-box;
+}
+
+.agendify-widget * {
+  box-sizing: border-box;
+}
+
+/* Ensure widget doesn't interfere with host page */
+.agendify-widget {
+  isolation: isolate;
+  z-index: 1000;
+}
+
+/* Responsive adjustments for widget */
+@media (max-width: 640px) {
+  .agendify-widget {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+} 
