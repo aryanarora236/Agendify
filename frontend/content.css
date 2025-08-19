@@ -1,0 +1,68 @@
+/* Chrome Extension Content Styles */
+/* These styles are injected into web pages when the widget is active */
+
+#agendify-widget-container {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  box-sizing: border-box !important;
+}
+
+#agendify-widget-container * {
+  box-sizing: border-box !important;
+}
+
+/* Ensure widget doesn't interfere with host page styles */
+#agendify-widget-container {
+  isolation: isolate;
+  z-index: 10000 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #agendify-widget-container {
+    width: 90% !important;
+    max-width: 350px !important;
+    right: 5% !important;
+    left: 5% !important;
+  }
+}
+
+/* Animation for widget appearance */
+#agendify-widget-container {
+  animation: agendify-slide-in 0.3s ease-out;
+}
+
+@keyframes agendify-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Hover effects for agenda items */
+#agendify-widget-container .agenda-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Custom scrollbar for widget content */
+#agendify-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+#agendify-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+#agendify-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+#agendify-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+} 

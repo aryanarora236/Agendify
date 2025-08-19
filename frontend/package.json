@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "build:widget": "vite build --config vite.widget.config.js"
+    "build:widget": "vite build --config vite.widget.config.js",
+    "build:extension": "npm run build && cp -r dist/* . && rm -rf dist"
   },
   "dependencies": {
     "react": "^18.2.0",

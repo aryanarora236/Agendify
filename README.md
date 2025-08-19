@@ -8,7 +8,8 @@ A website plugin that automatically generates agendas from Google Calendar + tas
 - **Smart Agenda View** - Display today's events and tasks in chronological order
 - **Task Management** - Add and manage tasks with due dates
 - **Notifications** - Browser notifications for upcoming events and daily email digests
-- **Plugin Widget** - Embeddable component for any website
+- **Chrome Extension** - Popup interface with calendar integration
+- **Website Widget** - Embeddable component for any website
 
 ## 🏗️ Project Structure
 
@@ -52,6 +53,15 @@ npm install
 npm run dev
 ```
 
+### Chrome Extension Setup
+```bash
+cd frontend
+npm install
+# Update manifest.json with your Google Client ID
+npm run build:extension
+# Load the frontend folder as unpacked extension in Chrome
+```
+
 ### Embed Widget
 Add this to any website:
 ```html
@@ -72,12 +82,13 @@ See `.env.example` files in both `backend/` and `frontend/` directories.
 ## 📝 Development Roadmap
 
 - [x] Project scaffolding
-- [ ] Backend authentication & Google OAuth
-- [ ] Calendar integration
-- [ ] Task management API
-- [ ] Frontend widget UI
-- [ ] Notifications system
-- [ ] Plugin packaging
+- [x] Backend authentication & Google OAuth
+- [x] Calendar integration
+- [x] Task management API
+- [x] Frontend widget UI
+- [x] Chrome extension popup
+- [x] Notifications system
+- [x] Plugin packaging
 - [ ] Deployment
 
 ## 🤝 Contributing
