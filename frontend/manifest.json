@@ -3,34 +3,31 @@
   "name": "Agendify - Smart Agenda Generator",
   "version": "1.0.0",
   "description": "Automatically generate agendas from Google Calendar + tasks",
+
   "permissions": [
     "identity",
     "storage",
-    "notifications",
-    "activeTab"
+    "activeTab",
+    "gmail.readonly"
   ],
   "host_permissions": [
     "https://www.googleapis.com/*",
-    "https://calendar.google.com/*"
+    "https://calendar.google.com/*",
+    "https://gmail.googleapis.com/*"
   ],
   "oauth2": {
-    "client_id": "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
+    "client_id": "812025809715-j3n1qe9ddol9tqq7tgepa18jcj2ph707.apps.googleusercontent.com",
     "scopes": [
+      "openid",
       "https://www.googleapis.com/auth/calendar.readonly",
-      "https://www.googleapis.com/auth/gmail.send",
+      "https://www.googleapis.com/auth/calendar.events",
+      "https://www.googleapis.com/auth/gmail.readonly",
       "https://www.googleapis.com/auth/userinfo.email",
       "https://www.googleapis.com/auth/userinfo.profile"
     ]
   },
   "action": {
-    "default_popup": "popup.html",
-    "default_title": "Agendify",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "32": "icons/icon32.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
+    "default_title": "Agendify"
   },
   "background": {
     "service_worker": "background.js"
@@ -41,11 +38,5 @@
       "js": ["content.js"],
       "css": ["content.css"]
     }
-  ],
-  "icons": {
-    "16": "icons/icon16.png",
-    "32": "icons/icon32.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  }
-} 
+  ]
+}
