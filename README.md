@@ -2,7 +2,7 @@
 
 A website plugin that automatically generates agendas from Google Calendar + tasks with minimal setup.
 
-## 🚀 MVP Features
+## MVP Features
 
 - **Google OAuth Integration** - Connect your Google Calendar and Gmail
 - **Smart Agenda View** - Display today's events and tasks in chronological order
