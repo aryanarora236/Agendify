@@ -1817,26 +1817,5 @@ class AgendifyPopup {
   }
 }
 
-// Initialize the popup when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM loaded, initializing popup...');
-  try {
-    window.popup = new AgendifyPopup();
-    console.log('Popup initialized successfully');
-  } catch (error) {
-    console.error('Failed to initialize popup:', error);
-  }
-});
-
-// Fallback initialization
-if (document.readyState === 'loading') {
-  console.log('Document still loading, waiting for DOMContentLoaded...');
-} else {
-  console.log('Document already loaded, initializing immediately...');
-  try {
-    window.popup = new AgendifyPopup();
-    console.log('Popup initialized successfully (immediate)');
-  } catch (error) {
-    console.error('Failed to initialize popup (immediate):', error);
-  }
-} 
+// Module scripts are deferred — DOM is always ready when this runs
+window.popup = new AgendifyPopup(); 
