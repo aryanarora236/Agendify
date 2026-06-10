@@ -19,7 +19,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ token });
       }
     });
-    return true; // Keep channel open for async response
+    return true;
   }
 
   if (request.type === 'REMOVE_AUTH_TOKEN') {
@@ -30,6 +30,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ success: true });
       }
     });
+    return true;
+  }
+
+  // Proxy Anthropic API calls through the service worker to avoid popup CSP restrictions
+  if (request.type === 'AI_EXTRACT') {
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': request.apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify(request.payload)
+    })
+      .then(r => r.json())
+      .then(data => sendResponse({ success: true, data }))
+      .catch(err => sendResponse({ success: false, error: err.message }));
     return true;
   }
 });

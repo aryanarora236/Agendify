@@ -348,12 +348,12 @@ class AgendifyPopup {
 
         <!-- API key -->
         <div class="api-key-section">
-          <label>OpenAI API Key</label>
+          <label>Anthropic API Key</label>
           <div class="api-key-row">
-            <input type="password" id="openaiKeyInput" placeholder="sk-…" value="${this.openaiKey || ''}">
+            <input type="password" id="openaiKeyInput" placeholder="sk-ant-…" value="${this.openaiKey || ''}">
             <button id="saveKeyBtn" class="btn btn-primary btn-small">Save</button>
           </div>
-          <span class="api-key-hint">Used locally only — never sent anywhere except OpenAI.</span>
+          <span class="api-key-hint">Stored locally only. Get yours at console.anthropic.com</span>
         </div>
 
         <!-- Monitored addresses -->
@@ -385,6 +385,13 @@ class AgendifyPopup {
 
     this.updateMonitoredEmailsList();
     this.setupEmailEventListeners();
+
+    // Restore last scan results immediately
+    const cached = await this.loadEmailEvents();
+    if (cached && cached.length > 0) {
+      document.getElementById('eventCount').textContent = cached.length;
+      this.displayEmailEvents(cached);
+    }
   }
 
   setupEmailEventListeners() {
@@ -441,31 +448,43 @@ class AgendifyPopup {
       );
 
       if (!messageRefs.length) {
-        listEl.innerHTML = '<div class="no-events">No emails found from those senders in the last 30 days.</div>';
+        listEl.innerHTML = '<div class="no-events">No emails found from those senders in the last 30 days.<br>Make sure the address in the monitored list exactly matches the sender.</div>';
         countEl.textContent = '0';
         return;
       }
 
+      const toProcess = messageRefs.slice(0, 20);
+      const loadingSpan = loadingEl?.querySelector('span');
       const allEvents = [];
+      const emailErrors = [];
 
-      for (const ref of messageRefs.slice(0, 20)) { // cap at 20 emails per scan
+      for (let i = 0; i < toProcess.length; i++) {
+        const ref = toProcess[i];
+        if (loadingSpan) loadingSpan.textContent = `Scanning email ${i + 1} of ${toProcess.length}…`;
         try {
           const email = await emailService.getEmailContent(ref.id);
-          if (!email?.text) continue;
+          if (!email) continue;
+
+          // Fall back to snippet when full text extraction returns empty
+          if (!email.text && email.snippet) email.text = email.snippet;
+          if (!email.text) continue;
 
           const extracted = await this.extractWithAI(email, this.openaiKey);
           for (const ev of extracted) {
             allEvents.push({ ...ev, emailId: ref.id, emailSubject: email.subject, emailFrom: email.from, processed: false });
           }
         } catch (err) {
+          emailErrors.push(`${ref.id}: ${err.message}`);
           console.warn('Failed to process email', ref.id, err.message);
         }
       }
 
       countEl.textContent = allEvents.length;
+      await this.saveEmailEvents(allEvents);
 
       if (!allEvents.length) {
-        listEl.innerHTML = '<div class="no-events">No confirmed scheduled events found in recent emails.</div>';
+        const errDetail = emailErrors.length ? `<br><small style="color:#9ca3af">${emailErrors.length} error(s): ${emailErrors[0]}</small>` : '';
+        listEl.innerHTML = `<div class="no-events">Scanned ${toProcess.length} email(s) — no confirmed scheduled events found.${errDetail}</div>`;
       } else {
         this.displayEmailEvents(allEvents);
       }
@@ -481,7 +500,7 @@ class AgendifyPopup {
     }
   }
 
-  // Call GPT-4o-mini; returns array of event objects (may be empty)
+  // Call claude-haiku-4-5 via background service worker (avoids popup CSP restrictions)
   async extractWithAI(emailContent, apiKey) {
     const today = new Date().toISOString().split('T')[0];
 
@@ -503,24 +522,27 @@ From: ${emailContent.from}
 Body:
 ${emailContent.text.slice(0, 3000)}`;
 
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
-        temperature: 0,
-        max_tokens: 800
-      })
+    const result = await new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage({
+        type: 'AI_EXTRACT',
+        apiKey,
+        payload: {
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 800,
+          system,
+          messages: [{ role: 'user', content: user }]
+        }
+      }, response => {
+        if (chrome.runtime.lastError) return reject(new Error(chrome.runtime.lastError.message));
+        if (!response?.success) return reject(new Error(response?.error || 'Anthropic request failed'));
+        resolve(response.data);
+      });
     });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error?.message || `OpenAI ${res.status}`);
-    }
+    if (result.error) throw new Error(result.error.message || 'Anthropic API error');
+    if (!result.content?.[0]) throw new Error('Empty response from Anthropic');
 
-    const data = await res.json();
-    const raw = data.choices[0].message.content.trim()
+    const raw = result.content[0].text.trim()
       .replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
 
     let parsed;
@@ -584,16 +606,18 @@ ${emailContent.text.slice(0, 3000)}`;
 
       this._emailEvents[idx] = { ...ev, processed: true, calendarEventId: created.id };
       this.displayEmailEvents(this._emailEvents);
+      await this.saveEmailEvents(this._emailEvents);
       this.showToast(`"${ev.event_name}" added to Calendar`);
     } catch (err) {
       this.showToast(`Failed: ${err.message}`, 'error');
     }
   }
 
-  denyEmailEvent(idx) {
+  async denyEmailEvent(idx) {
     if (!this._emailEvents?.[idx]) return;
     this._emailEvents[idx] = { ...this._emailEvents[idx], processed: true, calendarEventId: null };
     this.displayEmailEvents(this._emailEvents);
+    await this.saveEmailEvents(this._emailEvents);
   }
 
   // Build an ISO datetime string from a YYYY-MM-DD date and HH:MM time
@@ -667,6 +691,14 @@ ${emailContent.text.slice(0, 3000)}`;
 
   saveApiKey(key) {
     return new Promise(r => chrome.storage.local.set({ openaiKey: key }, r));
+  }
+
+  saveEmailEvents(events) {
+    return new Promise(r => chrome.storage.local.set({ emailEvents: events }, r));
+  }
+
+  loadEmailEvents() {
+    return new Promise(r => chrome.storage.local.get(['emailEvents'], d => r(d.emailEvents || null)));
   }
 }
 

@@ -12,7 +12,8 @@
   ],
   "host_permissions": [
     "https://www.googleapis.com/*",
-    "https://gmail.googleapis.com/*"
+    "https://gmail.googleapis.com/*",
+    "https://api.anthropic.com/*"
   ],
   "oauth2": {
     "client_id": "812025809715-j3n1qe9ddol9tqq7tgepa18jcj2ph707.apps.googleusercontent.com",
