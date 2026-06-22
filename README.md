@@ -1,6 +1,6 @@
 # Agendify — Smart Agenda Generator
  
-> A Chrome extension and embeddable website widget that automatically generates a unified daily agenda from your Google Calendar and tasks — zero manual input required.
+> A Chrome extension and embeddable website widget that automatically generates a unified daily agenda from your Google Calendar and gives you the option to add events from Gmail
  
 ---
  
@@ -70,14 +70,6 @@ cd ../frontend
 # Load the /frontend/extension folder as an unpacked extension in chrome://extensions
 ```
  
----
- 
-## Roadmap
- 
-- [ ] Deploy widget to a public CDN
-- [ ] Add support for Microsoft Outlook / Teams
-- [ ] Natural language task input ("remind me tomorrow at 3pm")
-- [ ] AI-powered schedule suggestions based on workload
 ---
  
 ## License
